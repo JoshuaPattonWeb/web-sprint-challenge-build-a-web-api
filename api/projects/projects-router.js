@@ -1,8 +1,13 @@
 // Write your "projects" router here!
 const express = require('express')
 const Projects = require('./projects-model')
-
 const router = express.Router()
+const {
+    logger,
+    errorCheck,
+    idChecker,
+    validate,
+} = require('./projects-middleware')
 
 router.get('/', async (req, res, next) => {
     try {
@@ -29,7 +34,7 @@ router.get('/:id', async (req, res, next) => {
     }
 })
 
-router.post('/', async (req, res, next) => {
+router.post('/', validate, async (req, res, next) => {
     try {
         const newProject = await Projects.insert(req.body)
         res.status(201).json(newProject)
@@ -38,7 +43,7 @@ router.post('/', async (req, res, next) => {
     }
 })
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', idChecker, validate, async (req, res, next) => {
     if(req.body.completed === undefined) {
         res.status(400).json({
             message: "Required field is missing"
@@ -53,7 +58,7 @@ router.put('/:id', async (req, res, next) => {
     }
 })
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', idChecker, async (req, res, next) => {
     try {
         await Projects.remove(req.params.id)
         res.status(200).json({
@@ -64,9 +69,9 @@ router.delete('/:id', async (req, res, next) => {
     }
 })
 
-router.get('/:id/actions', async (req, res, next) => {
+router.get('/:id/actions', idChecker, async (req, res, next) => {
     try {
-        const project = Projects.getProjectActions(req.params.id)
+        const project = await Projects.getProjectActions(req.params.id)
         res.status(200).json(project)
     } catch (err) {
         next(err)

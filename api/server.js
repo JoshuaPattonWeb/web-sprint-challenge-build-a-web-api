@@ -1,10 +1,14 @@
 const express = require('express');
 const server = express();
 const actionRouter = require('./actions/actions-router')
+const projectRouter = require('./projects/projects-router')
+const { logger } = require('./projects/projects-middleware')
+
 
 server.use(express.json())
 
 server.use('/api/actions', actionRouter)
+server.use('/api/projects', logger, projectRouter)
 
 server.use('*', (req, res, next) => {
     next({
